@@ -15,6 +15,7 @@ class BookingExpert extends Model
         'order_id',
         'user_id',
         'date',
+        'answer_id'
     ];
 
     public function expert()
@@ -39,5 +40,9 @@ class BookingExpert extends Model
 
     public function slot(){
         return $this->belongsTo(ExpertSolt::class);
+    }
+
+    public function answer(){
+        return $this->hasMany(Answer::class);
     }
 }

@@ -122,4 +122,37 @@ class BookingExpertController extends Controller
             'message' => 'Booking expert deleted successfully',
         ]);
     }
+
+    public function booking(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'date' => 'required|date_format:Y-m-d'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'result' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()->all(),
+            ], 422);
+        }
+
+        $booking = BookingExpert::where('date', $request->date)
+        ->where('expert_id',auth()->guard('expert')->user()->id)
+        ->get();
+
+        if ($booking->isEmpty()) {
+            return response()->json([
+                'result' => false,
+                'message' => 'Not Booking Yet',
+                'errors' => [],
+            ], 404);
+        }
+        return response()->json([
+            'result' => true,
+            'message' => 'All Booking',
+            'data' => BookingExpertResource::collection($booking),
+        ], 200);
+    }
+
 }

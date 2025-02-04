@@ -26,20 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'address',
-        'city',
-        'postal_code',
-        'phone',
-        'country',
-        'provider_id',
-        'email_verified_at',
-        'verification_code',
-        'new_email',
-        'new_phone',
-        'wss_token'
+        'name', 'email', 'password', 'address', 'city', 'postal_code', 'phone', 'country', 'provider_id', 'email_verified_at', 'verification_code','new_email','new_phone'
     ];
 
     /**
@@ -48,8 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     public function wishlists()
@@ -161,21 +147,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(AuctionProductBid::class);
     }
 
-    public function product_queries()
-    {
-        return $this->hasMany(ProductQuery::class, 'customer_id');
+    public function product_queries(){
+        return $this->hasMany(ProductQuery::class,'customer_id');
     }
 
-    public function uploads()
-    {
+    public function uploads(){
         return $this->hasMany(Upload::class);
     }
 
-    public function userCoupon()
-    {
+    public function userCoupon(){
         return $this->hasOne(UserCoupon::class);
     }
-    public function userAnswers()
+	public function userAnswers()
     {
         return $this->hasMany(UserAnswers::class);
     }
