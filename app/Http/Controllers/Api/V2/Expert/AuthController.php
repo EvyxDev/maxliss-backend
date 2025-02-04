@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api\V2\Expert;
 use App\Models\Expert;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CommunityResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\ExpertResource;
+use App\Models\Community;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -96,8 +98,7 @@ class AuthController extends Controller
             'message' => 'Invalid OTP'
         ], 401);
     }
-	
-	
+
 	public function updateLonLat(Request $request){
         $validator = Validator::make($request->all(), [
             'lat' => 'required|numeric',
@@ -228,6 +229,23 @@ class AuthController extends Controller
             'result' => true,
             'message' => 'Password reset successfully',
             'data' => $expert
+        ], 200);
+    }
+
+    // profile
+    public function profile(){
+        $expert = auth()->guard('expert')->user();
+
+        $expertData = ExpertResource::make($expert)->toArray(request());
+        unset($expertData['slots']);
+        $data['expert'] = $expertData;
+
+        $posts = Community::where('expert_id', $expert->id)->get();
+        $data['posts'] = CommunityResource::collection($posts);
+        return response()->json([
+            'result' => true,
+            'message' => 'Experet Profile',
+            'data' => $data
         ], 200);
     }
 }

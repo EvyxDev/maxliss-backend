@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers\Api\V2;
 
-use App\Models\User;
-use App\Models\Expert;
+use App\Http\Middleware\EnsureSystemKey;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use App\Http\Middleware\EnsureSystemKey;
+use App\Http\Controllers\Api\V2\Expert\AuthController as ExpertAuthController;
+use App\Http\Controllers\Api\V2\Expert\BookingExpertController;
 use App\Http\Controllers\Api\V2\Expert\ExpertCommunity;
 use App\Http\Controllers\Api\V2\Expert\ExpertController;
-use App\Http\Controllers\Api\V2\Expert\SlotExpertController;
 use App\Http\Controllers\Api\V2\Expert\ExpertReviewController;
-use App\Http\Controllers\Api\V2\Expert\BookingExpertController;
-use App\Http\Controllers\Api\V2\Expert\AuthController as ExpertAuthController;
+use App\Http\Controllers\Api\V2\Expert\SlotExpertController;
 
 
-Route::get('optimize-clear', function () {
-    Artisan::call('optimize:clear');
-    return "Done";
+Route::get('optimize-clear',function(){
+	Artisan::call('optimize:clear');
+	return "Done";
 });
 Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function () {
     Route::post('info', [AuthController::class, 'getUserInfoByAccessToken']);
@@ -44,11 +42,11 @@ Route::group(['prefix' => 'v2/auth', 'middleware' => ['app_language']], function
         Route::post('password/forget_request', 'forgetRequest');
         Route::post('password/confirm_reset', 'confirmReset')->middleware('auth:sanctum');
         Route::post('password/resend_code', 'resendCode');
-        Route::post('password/validate_otp', 'ValidateOtp');
+		Route::post('password/validate_otp', 'ValidateOtp');
     });
 });
 Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
-    Route::get('answers-questions', 'App\Http\Controllers\Api\V2\ProductController@AllQuestion');
+    Route::get('answers-questions','App\Http\Controllers\Api\V2\ProductController@AllQuestion');
 
     //auth controller
     Route::post('guest-user-account-create', [AuthController::class, 'guestUserAccountCreate']);
@@ -77,7 +75,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
             Route::post('change-delivery-status', 'change_delivery_status')->middleware('auth:sanctum');
             Route::get('deliveries/on_the_way/{id}', 'on_the_way_delivery')->middleware('auth:sanctum');
             //Delivery Boy Order
-            Route::get('purchase-history-details/{id}', [DeliveryBoyController::class, 'details'])->middleware('auth:sanctum');
+            Route::get('purchase-history-details/{id}',[DeliveryBoyController::class, 'details'])->middleware('auth:sanctum');
             Route::get('purchase-history-items/{id}', [DeliveryBoyController::class, 'items'])->middleware('auth:sanctum');
         });
     });
@@ -90,7 +88,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
         Route::post('carts/add', 'add');
         Route::post('change-quantity', 'changeQuantity');
         Route::post('carts/get-list/{user_id}', 'getList');
-        Route::post('guest-customer-info-check', 'guestCustomerInfoCheck');
+	        Route::post('guest-customer-info-check', 'guestCustomerInfoCheck');
         Route::post('updateCartStatus', 'updateCartStatus');
     });
 
@@ -205,11 +203,11 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
 
         Route::post('profile/update', 'App\Http\Controllers\Api\V2\ProfileController@update')->middleware('auth:sanctum');
         Route::post('profile/update_email_or_phone', 'App\Http\Controllers\Api\V2\ProfileController@update_email_or_phone')
-            ->middleware('auth:sanctum');
+			->middleware('auth:sanctum');
 
         Route::post('profile/update-device-token', 'App\Http\Controllers\Api\V2\ProfileController@update_device_token')
-            ->middleware('auth:sanctum');
-        Route::post('profile/update_email_or_phone/verify_otp', 'App\Http\Controllers\Api\V2\ProfileController@verify_otp')->middleware('auth:sanctum');
+			->middleware('auth:sanctum');
+		        Route::post('profile/update_email_or_phone/verify_otp', 'App\Http\Controllers\Api\V2\ProfileController@verify_otp')->middleware('auth:sanctum');
 
         Route::post('profile/update-image', 'App\Http\Controllers\Api\V2\ProfileController@updateImage')->middleware('auth:sanctum');
         Route::post('profile/image-upload', 'App\Http\Controllers\Api\V2\ProfileController@imageUpload')->middleware('auth:sanctum');
@@ -237,7 +235,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
             Route::get('notifications/mark-as-read', 'notificationMarkAsRead')->middleware('auth:sanctum');
         });
 
-        Route::get('products/last-viewed', [ProductController::class, 'lastViewedProducts'])->middleware('auth:sanctum');
+        Route::get('products/last-viewed',[ProductController::class, 'lastViewedProducts'])->middleware('auth:sanctum');
     });
 
     //end user bann
@@ -248,8 +246,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
         Route::get('online-pay/failed', 'paymentFailed');
     });
 
-    Route::get('get-search-suggestions', [SearchSuggestionController::class, 'getList']);
-    Route::get('languages', [LanguageController::class, 'getList']);
+    Route::get('get-search-suggestions',[SearchSuggestionController::class, 'getList'] );
+    Route::get('languages',[LanguageController::class, 'getList']);
 
     Route::controller(CustomerProductController::class)->group(function () {
         Route::get('classified/all', 'all');
@@ -448,10 +446,11 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
 
         Route::any('/phonepe/redirecturl', 'App\Http\Controllers\Api\V2\PhonepeController@phonepe_redirecturl')->name('api.phonepe.redirecturl');
         Route::any('/phonepe/callbackUrl', 'App\Http\Controllers\Api\V2\PhonepeController@phonepe_callbackUrl')->name('api.phonepe.callbackUrl');
+
     });
 
-    // customer file upload
-    Route::controller(CustomerFileUploadController::class)->middleware('auth:sanctum')->group(function () {
+      // customer file upload
+      Route::controller(CustomerFileUploadController::class)->middleware('auth:sanctum')->group(function () {
         Route::post('file/upload', 'upload');
         Route::get('file/all', 'index');
         Route::get('file/delete/{id}', 'destroy');
@@ -461,9 +460,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
 // Expert
 Route::group(['prefix' => 'v2/expert'], function () {
     Route::post('login', [ExpertAuthController::class, 'login']);
-    Route::post('login/check-otp', [ExpertAuthController::class, 'checkOtp']);
-    Route::post('update/lon-lat', [ExpertAuthController::class, 'updateLonLat']);
+	Route::post('login/check-otp', [ExpertAuthController::class, 'checkOtp']);
+	Route::post('update/lon-lat', [ExpertAuthController::class, 'updateLonLat']);
     Route::post('logout', [ExpertAuthController::class, 'logout']);
+    Route::post('profile', [ExpertAuthController::class, 'profile'])->middleware('auth:sanctum');
     Route::post('forgot-password', [ExpertAuthController::class, 'forgotPassword']);
     Route::post('verify-otp', [ExpertAuthController::class, 'verifyOtp']);
     Route::post('reset-password', [ExpertAuthController::class, 'resetPassword']);
@@ -472,7 +472,7 @@ Route::group(['prefix' => 'v2/expert'], function () {
     Route::post('expert/filter', [ExpertController::class, 'filter']);
     Route::apiResource('expert', ExpertController::class);
     Route::apiResource('expert-review', ExpertReviewController::class)->middleware('auth:sanctum');
-    Route::post('booking-expert/slots', [BookingExpertController::class, 'booking']);
+	Route::post('booking-expert/slots', [BookingExpertController::class, 'booking']);
     Route::get('booking-expert/expert', [BookingExpertController::class, 'expert_index']);
     Route::apiResource('booking-expert', BookingExpertController::class);
 });

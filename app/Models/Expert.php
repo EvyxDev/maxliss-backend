@@ -22,23 +22,28 @@ class Expert extends Authenticatable
         'experience',
         'password',
         'otp',
-        'price',
-        'wss_token'
+        'price'
     ];
+
     public function city()
     {
         return $this->belongsTo(City::class);
     }
+
     public function state()
     {
         return $this->belongsTo(State::class);
     }
+
     public function slots()
     {
         return $this->hasMany(ExpertSolt::class);
     }
+
     public function reviews()
     {
         return $this->hasMany(ExpertReview::class);
     }
+
+
 }

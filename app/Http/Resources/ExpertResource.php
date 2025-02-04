@@ -29,7 +29,7 @@ class ExpertResource extends JsonResource
             'rating' => $this->reviews->avg('rating'),
             'created_at' => $this->created_at->format('d-m-Y'),
             'updated_at' => $this->updated_at->format('d-m-Y'),
-            'slots' => ExpertSlotResource::collection($this->slots),
+            'slots' => ExpertSlotResource::collection(resource: $this->slots),
         ];
     }
 }
