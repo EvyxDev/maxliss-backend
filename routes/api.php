@@ -284,9 +284,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
     Route::apiResource('general-settings', 'App\Http\Controllers\Api\V2\GeneralSettingController')->only('index');
 
     Route::apiResource('home-categories', 'App\Http\Controllers\Api\V2\HomeCategoryController')->only('index');
-
-
-
     Route::get('filter/categories', 'App\Http\Controllers\Api\V2\FilterController@categories');
     Route::get('filter/brands', 'App\Http\Controllers\Api\V2\FilterController@brands');
 
@@ -490,8 +487,6 @@ Route::fallback(function () {
         'message' => 'Invalid Route'
     ]);
 });
-
-
 Route::get('update-wss-token', function () {
     foreach (User::all() as $user) {
         $user->wss_token =  uniqid(bin2hex(random_bytes(16)), true);

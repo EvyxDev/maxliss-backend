@@ -133,7 +133,6 @@ class SlotExpertController extends Controller
             'day_id' => 'required|integer|exists:days,id',
             'date' => 'required|date_format:Y-m-d'
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 'result' => false,
@@ -141,16 +140,13 @@ class SlotExpertController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-
         $slots = ExpertSolt::with('booking')
             ->where('expert_id', $request->expert_id)
             ->where('day_id', $request->day_id)
             ->get();
-
         $filteredSlots = $slots->reject(function ($slot) use ($request) {
             return $slot->booking->contains('date', $request->date);
         });
-
         return response()->json([
             'result' => true,
             'message' => 'Slots fetched successfully',

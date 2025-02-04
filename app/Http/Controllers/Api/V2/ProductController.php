@@ -167,14 +167,11 @@ class ProductController extends Controller
         $category = Category::where('slug', $slug)->first();
         $category = Category::with('childrenCategories')->find($category->id);
         $products = $category->products();
-
         if ($request->name != "" || $request->name != null) {
             $products = $products->where('name', 'like', '%' . $request->name . '%');
         }
-
         return new ProductMiniCollection(filter_products($products)->latest()->paginate(10));
     }
-
     public function brand($slug, Request $request)
     {
         $brand = Brand::where('slug', $slug)->first();
@@ -184,14 +181,11 @@ class ProductController extends Controller
         }
         return new ProductMiniCollection(filter_products($products)->latest()->paginate(10));
     }
-
     public function getBrands()
     {
         $brands = Brand::all();
-
         return BrandCollection::collection($brands);
     }
-
     public function todaysDeal()
     {
         $products = Product::where('todays_deal', 1)->physical();
@@ -372,7 +366,6 @@ class ProductController extends Controller
 
     public function ProductByAttribue(Request $request)
     {
-
         try {
             $answers = $request->answers;
             $answerIds = collect($answers)->pluck('answer_id')->toArray();
@@ -390,18 +383,14 @@ class ProductController extends Controller
                     }
                 });
             })->get();
-            $user = User::find(auth()->user()->id);
-			
-			foreach($answers as $answer)
-			{
-				UserAnswers::create([
-					'user_id' => auth()->user()->id ,
-					'answer_id' => $answer['answer_id'],
-				]);
+            foreach ($answers as $answer) {
+                UserAnswers::create([
+                    'user_id' => auth()->user()->id,
+                    'answer_id' => $answer['answer_id'],
+                ]);
+            }
 
-			}
-			
-			return  new ProductMiniCollection($products);
+            return  new ProductMiniCollection($products);
         } catch (Exception $e) {
             dd($e);
         }

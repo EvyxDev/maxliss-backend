@@ -56,6 +56,7 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->password = bcrypt($request->password);
         $user->verification_code = 1234;
+        $user->wss_token = uniqid(bin2hex(random_bytes(16)), true);
         $user->email_verified_at = null;
         $user->save();
         $user->createToken('tokens')->plainTextToken;
@@ -419,12 +420,11 @@ class AuthController extends Controller
                 'avatar' => $user->avatar,
                 'avatar_original' => uploaded_asset($user->avatar_original),
                 'phone' => $user->phone,
+                'wss_token' => $user->wss_token,
                 'email_verified' => $user->email_verified_at != null
             ]
         ]);
     }
-
-
     protected function loginFailed()
     {
 

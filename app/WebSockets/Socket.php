@@ -2,8 +2,8 @@
 
 namespace App\WebSockets;
 
-use App\Models\Expert;
 use App\Models\User;
+use App\Models\Expert;
 use App\Models\NewMessage;
 use Ratchet\ConnectionInterface;
 use Illuminate\Support\Facades\Log;
