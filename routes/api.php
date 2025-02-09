@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use App\Models\User;
+use App\Models\Expert;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Middleware\EnsureSystemKey;
 use App\Http\Controllers\Api\V2\Expert\ExpertCommunity;
 use App\Http\Controllers\Api\V2\Expert\ExpertController;
-use App\Http\Controllers\Api\V2\Expert\WalletController;
 use App\Http\Controllers\Api\V2\Expert\SlotExpertController;
 use App\Http\Controllers\Api\V2\Expert\ExpertReviewController;
 use App\Http\Controllers\Api\V2\Expert\BookingExpertController;
