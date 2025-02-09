@@ -75,6 +75,18 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="form-group row">
+                    <label class="col-sm-4 col-from-label" for="user">{{translate('User')}}</label>
+                    <div class="col-sm-8">
+                        <select name="user_id" id="user" class="form-control" required>
+                            <option value="">{{translate('Select user')}}</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ $user->id == $expert->user_id ? 'selected' : '' }}>{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group mb-0 text-right">
                     <button type="submit" class="btn btn-primary">{{translate('Save')}}</button>
                 </div>
@@ -90,7 +102,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         const stateSelect = document.getElementById('state_id');
         const citySelect = document.getElementById('city_id');
-        const citiesByState = {!!json_encode($states -> mapWithKeys(function($state) {return [$state -> id => $state -> cities];})) !!};
+        const citiesByState = {!!json_encode($states->mapWithKeys(function ($state) {
+    return [$state->id => $state->cities]; })) !!};
         stateSelect.addEventListener('change', function() {
             const selectedStateId = this.value;
             citySelect.innerHTML = '<option value="">{{translate('Select City')}}</option>';

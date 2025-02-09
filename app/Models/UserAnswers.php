@@ -9,7 +9,7 @@ class UserAnswers extends Model
 {
     use HasFactory;
 	
-	protected $fillable = ['user_id' , 'answer_id'];
+	protected $fillable = ['user_id' , 'answer_id', 'unique_id','type'];
 	protected $table = 'user_answers';  
 
     public function user()

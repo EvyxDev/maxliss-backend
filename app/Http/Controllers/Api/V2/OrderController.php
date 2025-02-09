@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\Api\V2;
 
-use App\Models\Address;
-use Illuminate\Http\Request;
-use App\Models\Order;
-use App\Models\Cart;
-use App\Models\Product;
-use App\Models\OrderDetail;
-use App\Models\Coupon;
-use App\Models\CouponUsage;
-use App\Models\BusinessSetting;
-use App\Models\User;
 use DB;
-use \App\Utility\NotificationUtility;
+use App\Models\Cart;
+use App\Models\User;
+use App\Models\Order;
+use App\Models\Coupon;
+use App\Models\Expert;
+use App\Models\Address;
+use App\Models\Product;
+use App\Models\CouponUsage;
+use App\Models\OrderDetail;
+use App\Models\UserAnswers;
+use Illuminate\Http\Request;
+use App\Models\BookingExpert;
 use App\Models\CombinedOrder;
+use App\Models\BusinessSetting;
+use App\Models\ExpertNotification;
+use \App\Utility\NotificationUtility;
 use App\Http\Controllers\AffiliateController;
 
 class OrderController extends Controller
@@ -41,6 +45,13 @@ class OrderController extends Controller
                 'message' => translate('Cart is Empty')
             ]);
         }
+
+        $expertPrice = 0;
+        if ($request->has('expert_id')) {
+            $expert = Expert::find($request->expert_id);
+            $expertPrice = $expert->price;
+        }
+        
         $user = User::find(auth()->user()->id);
 		$address_id = null;
         if(isset($request->address_id))
@@ -77,7 +88,6 @@ class OrderController extends Controller
                 $shippingAddress['lat_lang'] = $address->latitude . ',' . $address->longitude;
             }
         }
-
         $combined_order = new CombinedOrder;
         $combined_order->user_id = $user->id;
         $combined_order->shipping_address = json_encode($shippingAddress);
@@ -111,6 +121,31 @@ class OrderController extends Controller
             }
 
             $order->save();
+
+            if ($request->has('expert_id') && $request->has('expert_slot_id') && $request->has('date')) {
+                $userAnswer = UserAnswers::where('user_id', auth()->guard('sanctum')->user()->id)
+                ->where('type', 'expert')
+                ->latest()
+                ->take(9)
+                ->pluck('answer_id');
+
+                $user_answer = implode(",", $userAnswer->toArray());
+                $bookingExpert = BookingExpert::create([
+                    'expert_id' => $request->expert_id,
+                    'expert_slot_id' => $request->expert_slot_id,
+                    'order_id' => $order->id,
+                    'user_id' => auth()->guard('sanctum')->user()->id,
+                    'date' => $request->date,
+                    'address_id' => $address_id,
+                    'answer_id' => $user_answer
+                ]);
+
+                ExpertNotification::create([
+                    'expert_id' => $request->expert_id,
+                    'title' => 'New Booking',
+                    'body' => 'You have a new booking from ' . $user->name . ' on ' . $request->date,
+                ]);
+            }
 
             $subtotal = 0;
             $tax = 0;
@@ -181,17 +216,10 @@ class OrderController extends Controller
                     $seller->save();
                 }
 
-                if (addon_is_activated('affiliate_system')) {
-                    if ($order_detail->product_referral_code) {
-                        $referred_by_user = User::where('referral_code', $order_detail->product_referral_code)->first();
-
-                        $affiliateController = new AffiliateController;
-                        $affiliateController->processAffiliateStats($referred_by_user->id, 0, $order_detail->quantity, 0, 0);
-                    }
-                }
+          
             }
 
-            $order->grand_total = $subtotal + $tax + $shipping;
+            $order->grand_total = $subtotal + $tax + $shipping + $expertPrice;
 
             if ($seller_product[0]->coupon_code != null) {
                 $order->coupon_discount = $coupon_discount;

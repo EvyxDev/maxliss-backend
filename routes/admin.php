@@ -181,6 +181,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin', 'prevent-ba
 
     // Seller
     Route::resource('sellers', SellerController::class);
+    Route::post('expert-transaction', [ExpertController::class,'expert_transaction'])->name('expert.transaction');
 	Route::resource('experts', ExpertController::class);
 
     Route::controller(SellerController::class)->group(function () {
@@ -416,7 +417,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'admin', 'prevent-ba
         // Order bulk export
         Route::get('/order-bulk-export', 'orderBulkExport')->name('order-bulk-export');
 
-        // 
+        //
         Route::post('order-payment-notification', 'unpaid_order_payment_notification_send')->name('unpaid_order_payment_notification');
     });
 

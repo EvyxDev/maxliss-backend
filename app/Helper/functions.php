@@ -49,7 +49,7 @@ function updateImages(Request $request, $fieldName = [], $directory = 'images', 
         $imagesToKeep = array_intersect($currentImages, $oldImages);
         $imagesToDelete = array_diff($currentImages, $oldImages);
         foreach ($imagesToDelete as $imageToDelete) {
-            if (file_exists(public_path($imageToDelete))) {
+            if ($imageToDelete &&file_exists(public_path($imageToDelete)) ) {
                 unlink(public_path($imageToDelete));
             }
         }

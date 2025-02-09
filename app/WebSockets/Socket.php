@@ -2,8 +2,8 @@
 
 namespace App\WebSockets;
 
-use App\Models\User;
 use App\Models\Expert;
+use App\Models\User;
 use App\Models\NewMessage;
 use Ratchet\ConnectionInterface;
 use Illuminate\Support\Facades\Log;
@@ -47,15 +47,32 @@ class Socket implements MessageComponentInterface
             parse_str($queryString, $queryArray);
             $wss_token = $queryArray['wss_token'];
             $user = User::where('wss_token', $wss_token)->first();
+
+            if ($queryArray['user_type'] == "user") {
+                $sender_id = $user->id;
+                $receiver_id = User::where('user_type', 'admin')->first()->id;
+            } else {
+                $sender_id = User::where('user_type', 'admin')->first()->id;
+                $receiver_id = $user->id;
+            }
             $message = new NewMessage();
             $message->sender_id = $user->id;
             $message->receiver_id = User::where('user_type', 'admin')->first()->id;
             $message->message = $data['msg'];
             $message->save();
+
+            $Replymessage = new NewMessage();
+            $Replymessage->sender_id = User::where('user_type', 'admin')->first()->id;
+            $Replymessage->receiver_id = $user->id;
+            $Replymessage->message = $data['msg'];
+            $Replymessage->save();
             foreach ($this->clients as $client) {
                 if ($client !== $from) {
                     $client->send($msg);
+                    $client->send($Replymessage->message);
                 }
+
+
             }
         } catch (\Exception $e) {
             Log::error('Message saving failed: ' . $e->getMessage());
@@ -68,6 +85,9 @@ class Socket implements MessageComponentInterface
     }
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
+        Log::error('Message saving failed: ' . $e->getMessage());
+        return response()->json(['error' => 'Something went wrong'], 500);
+
         $conn->close();
     }
 }

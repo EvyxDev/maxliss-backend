@@ -26,10 +26,12 @@ class ExpertResource extends JsonResource
             'lon' => $this->lon,
             'price' => $this->price,
             'experience' => $this->experience,
+            'rating_count' => count($this->reviews),
             'rating' => $this->reviews->avg('rating'),
             'created_at' => $this->created_at->format('d-m-Y'),
             'updated_at' => $this->updated_at->format('d-m-Y'),
             'slots' => ExpertSlotResource::collection(resource: $this->slots),
+            'community' => CommunityResource::collection( $this->communities),
         ];
     }
 }

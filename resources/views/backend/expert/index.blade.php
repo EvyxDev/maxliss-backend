@@ -22,6 +22,18 @@ $route = Route::currentRouteName() == 'experts.index' ? 'all_expert_route' : 'ex
 </div>
 
 <div class="card">
+    {{-- Show Validation Errors --}}
+    @if ($errors->any())
+        @foreach ($errors->all() as $error)
+            <div class="alert alert-danger">
+                {{ $error }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endforeach
+    @endif
+
     <form class="" id="sort_sellers" action="" method="GET">
         <div class="card-header row gutters-5">
             <div class="col">
@@ -60,6 +72,9 @@ $route = Route::currentRouteName() == 'experts.index' ? 'all_expert_route' : 'ex
                         <th data-breakpoints="lg">{{translate('Experience')}}</th>
                         <th data-breakpoints="lg">{{translate('State')}}</th>
                         <th data-breakpoints="lg">{{translate('City')}}</th>
+                        <th data-breakpoints="lg">{{translate('Amount')}}</th>
+                        <th data-breakpoints="lg">{{translate('Total Transactions')}}</th>
+                        <th data-breakpoints="lg">{{translate('User')}}</th>
                         <th data-breakpoints="lg">{{translate('Rating')}}</th>
                         <th width="10%">{{translate('Options')}}</th>
                     </tr>
@@ -82,6 +97,9 @@ $route = Route::currentRouteName() == 'experts.index' ? 'all_expert_route' : 'ex
                         <td>{{$expert->experience}}</td>
                         <td>{{$expert->state->name}}</td>
                         <td>{{$expert->city->name}}</td>
+                        <td>{{$expert->amount}}</td>
+                        <td>{{$expert->transactions->sum('amount')}}</td> 
+                        <td>{{$expert->user->name}}</td>
                         <td>
                             {{ $expert->rating }}
                             <span class="rating rating-sm m-0 ml-1">
@@ -94,14 +112,17 @@ $route = Route::currentRouteName() == 'experts.index' ? 'all_expert_route' : 'ex
                             </span>
                         </td>
                         <td>
-                            <div class="dropdown">
-                                <button type="button" class="btn btn-sm btn-circle btn-soft-primary btn-icon dropdown-toggle no-arrow" data-toggle="dropdown" href="javascript:void(0);" role="button" aria-haspopup="false" aria-expanded="false">
+                            <div class="dropdown d-flex">
+                                <button type="button" class="btn btn-sm btn-circle btn-soft-primary btn-icon dropdown-toggle no-arrow" data-toggle="dropdown" href="javascript:void(0);" role="button" aria-haspopup="true" aria-expanded="false">
                                     <i class="las la-ellipsis-v"></i>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-xs">
-                                    <a href="{{route('experts.edit', encrypt($expert->id))}}" class="dropdown-item">
-                                        {{translate('Edit')}}
+                                    <a href="{{ route('experts.edit', encrypt($expert->id)) }}" class="dropdown-item">
+                                        {{ translate('Edit') }}
                                     </a>
+                                    <button type="button" class="dropdown-item" data-toggle="modal" data-target="#add-expert-transaction-{{ $expert->id }}" href="javascript:void(0);" role="button" aria-haspopup="true" aria-expanded="false">
+                                        {{ translate('Add Transaction') }}
+                                    </button>
                                 </div>
                             </div>
                         </td>
@@ -114,6 +135,39 @@ $route = Route::currentRouteName() == 'experts.index' ? 'all_expert_route' : 'ex
             </div>
         </div>
     </form>
+    
+    {{-- Add Modal Bootstrap Add New Transaction for expert --}}
+    <div class="modal fade" id="add-expert-transaction-{{ $expert->id }}" tabindex="-1" role="dialog" aria-labelledby="add-expert-transaction-{{ $expert->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <form action="{{ route('expert.transaction') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="expert_id" value="{{ $expert->id }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title h6">{{ translate('Add New Transaction') }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true" class="la-2x">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="amount">{{ translate('Amount') }}</label>
+                            <input type="number" class="form-control" name="amount" id="amount" max="{{ $expert->amount }}" required>                            {{-- Body --}}
+                            <label for="body">{{ translate('Body') }}</label>
+                            <textarea class="form-control" name="body" id="body" required></textarea>
+                            {{-- Date --}}
+                            <label for="date">{{ translate('date') }}</label>
+                            <input type="date" class="form-control" name="date" id="date" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Close') }}</button>
+                        <button type="submit" class="btn btn-primary">{{ translate('Save changes') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @endsection

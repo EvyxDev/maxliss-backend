@@ -22,7 +22,8 @@ class Expert extends Authenticatable
         'experience',
         'password',
         'otp',
-        'price'
+        'price',
+        'user_id'
     ];
 
     public function city()
@@ -45,5 +46,25 @@ class Expert extends Authenticatable
         return $this->hasMany(ExpertReview::class);
     }
 
+    // User
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
+    public function transactions()
+    {
+        return $this->hasMany(ExpertTranaction::class);
+    }
+
+    // community
+    public function communities()
+    {
+        return $this->hasMany(Community::class, 'expert_id');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(ExpertNotification::class);
+    }
 }

@@ -108,6 +108,21 @@
                     </div>
                 </div>
 
+                
+                <div class="form-group row">
+                    <label class="col-sm-4 col-from-label" for="user">{{ translate('User') }}</label>
+                    <div class="col-sm-8">
+                        <select class="form-control rounded-0" name="user_id" id="user">
+                            <option value="">{{ translate('Select User') }}</option>
+                            @foreach ($users as $user)
+                            <option value="{{ $user->id }}" >
+                                {{ $user->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group row">
                     <label class="col-sm-4 col-from-label" for="password">{{ translate('Password') }}</label>
                     <div class="col-sm-8">

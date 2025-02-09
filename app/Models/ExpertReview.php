@@ -15,6 +15,12 @@ class ExpertReview extends Model
         'rating',
         'review',
         'image',
+        'id_card',
+        'lab_coat',
+        'efficiency',
+        'personal_hygiene',
+        'smell',
+        'overall_appearance',
     ];
 
     public function expert()

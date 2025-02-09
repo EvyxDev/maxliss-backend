@@ -13,7 +13,9 @@ use App\Models\OrderDetail;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
+use App\Models\ExpertTranaction;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class ExpertController extends Controller
 {
@@ -51,14 +53,15 @@ class ExpertController extends Controller
         }
 
         // Paginate the results
-        $experts = $experts->with(['state:id,name', 'city:id,name'])->paginate(15);
+        $experts = $experts->with(['state:id,name', 'city:id,name', 'transactions'])->paginate(15);
 
         return view('backend.expert.index', compact('experts', 'sort_search', 'approved', 'verification_status'));
     }
     public function create()
     {
         $states = State::with('cities')->get();
-        return view('backend.expert.create', compact('states'));
+        $users = User::where('user_type', 'staff')->get();
+        return view('backend.expert.create', compact(['states', 'users']));
     }
     public function store(Request $request)
     {
@@ -72,6 +75,7 @@ class ExpertController extends Controller
                     'city_id' => 'required|exists:cities,id',
                     'experience' => 'required|integer|min:1',
                     'price' => 'required|numeric|min:0',
+                    'user_id' => 'required|numeric',
                     'password' => 'required|min:8|confirmed',
                 ],
                 [
@@ -107,6 +111,7 @@ class ExpertController extends Controller
             $expert->city_id    = $request->city_id;
             $expert->experience    = $request->experience;
             $expert->price    = $request->price;
+            $expert->user_id    = $request->user_id;
             $expert->password = Hash::make($password);
             $expert->wss_token = uniqid(bin2hex(random_bytes(16)), true);
             $expert->save();
@@ -121,7 +126,8 @@ class ExpertController extends Controller
     {
         $states = State::with('cities')->get();
         $expert = Expert::findOrFail(decrypt($id));
-        return view('backend.expert.edit', compact('expert', 'states'));
+        $users = User::where('user_type', 'staff')->get();
+        return view('backend.expert.edit', compact(['expert', 'states', 'users']));
     }
     public function update(Request $request, $id)
     {
@@ -217,5 +223,33 @@ class ExpertController extends Controller
             flash(translate('Something went wrong'))->error();
             return back();
         }
+    }
+
+    public function expert_transaction(Request $request){
+        // validation 
+        $expert = Expert::findOrFail($request->expert_id);
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:1|max:'.$expert->amount,
+            'body' => 'required|string',
+            'date' => 'required|date|before_or_equal:today'
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $expert->amount -= $request->amount;
+        $expert->save();
+
+        ExpertTranaction::create([
+            'expert_id' => $request->expert_id,
+            'amount' => $request->amount,
+            'body' => $request->body,
+            'title' => 'Add New Balance Is:' . $request->amount,
+            'date' => $request->date
+        ]);
+
+        flash(translate('Transaction has been added successfully'))->success();
+        return back();
     }
 }

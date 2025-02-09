@@ -136,7 +136,6 @@ class BookingExpertController extends Controller
                 'errors' => $validator->errors()->all(),
             ], 422);
         }
-
         $booking = BookingExpert::where('date', $request->date)
         ->where('expert_id',auth()->guard('expert')->user()->id)
         ->get();
@@ -155,4 +154,35 @@ class BookingExpertController extends Controller
         ], 200);
     }
 
+    public function changeStatus(Request $request, $id)
+    {
+        $booking = BookingExpert::find($id);
+        if (!$booking) {
+            return response()->json([
+                'result' => false,
+                'message' => 'Booking not found',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|numeric|in:1,2,3',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'result' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()->all(),
+            ], 422);
+        }
+
+        $booking->status = $request->status;
+        $booking->save();
+
+        return response()->json([
+            'result' => true,
+            'message' => 'Booking status updated successfully',
+            'data' => BookingExpertResource::make($booking),
+        ]);
+    }
 }

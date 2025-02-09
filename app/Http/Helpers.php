@@ -1199,7 +1199,7 @@ if (!function_exists('static_asset')) {
     {
         //return app('url')->asset($path, $secure);
 
-         return app('url')->asset('public/' . $path, $secure);
+         return app('url')->asset($path, $secure);
     }
 }
 
@@ -1356,8 +1356,8 @@ if (!function_exists('checkout_done')) {
             $order->save();
 
             // Order paid notification to Customer, Seller, & Admin
-            EmailUtility::order_email($order, 'paid'); 
-            
+            EmailUtility::order_email($order, 'paid');
+
             try {
                 NotificationUtility::sendOrderPlacedNotification($order);
                 calculateCommissionAffilationClubPoint($order);

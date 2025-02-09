@@ -20,15 +20,21 @@ class CommunityResource extends JsonResource
             'id' => $this->id,
             'expert' => [
                 'id' => $this->expert->id ?? null,
-                'name' => $this->expert->name,
-                'email' => $this->expert->email,
-                'location' => $this->expert->state->name .' , '. $this->expert->city->name,
-                'image' => env('APP_URL') . '/public/' . trim($this->expert->image),
+                'name' => $this->expert->name ?? null,
+                'email' => $this->expert->email ?? null,
+                'location' => $this->expert->state && $this->expert->city
+                    ? $this->expert->state->name . ', ' . $this->expert->city->name
+                    : null,
+                'image' => $this->expert->image
+                    ? env('APP_URL') . '/public/' . trim($this->expert->image)
+                    : null,
             ],
             'title' => $this->title,
-            'images' => array_map(function ($image) {
-                return env('APP_URL') . '/public/' . trim($image);
-            }, explode(',', $this->image)),
+            'images' => $this->image
+                ? array_map(function ($image) {
+                    return env('APP_URL') . '/public/' . trim($image);
+                }, explode(',', $this->image))
+                : [],
             'time' => Carbon::parse($this->created_at)->diffForHumans(),
             'likes' => $this->likes->count(),
             'is_wishlist' => $this->checkWishlist(),

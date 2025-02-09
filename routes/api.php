@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Api\V2;
 
-use App\Http\Middleware\EnsureSystemKey;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\Api\V2\Expert\AuthController as ExpertAuthController;
-use App\Http\Controllers\Api\V2\Expert\BookingExpertController;
+use App\Http\Middleware\EnsureSystemKey;
 use App\Http\Controllers\Api\V2\Expert\ExpertCommunity;
 use App\Http\Controllers\Api\V2\Expert\ExpertController;
-use App\Http\Controllers\Api\V2\Expert\ExpertReviewController;
+use App\Http\Controllers\Api\V2\Expert\WalletController;
 use App\Http\Controllers\Api\V2\Expert\SlotExpertController;
+use App\Http\Controllers\Api\V2\Expert\ExpertReviewController;
+use App\Http\Controllers\Api\V2\Expert\BookingExpertController;
+use App\Http\Controllers\Api\V2\Expert\AuthController as ExpertAuthController;
 
 
 Route::get('optimize-clear',function(){
@@ -355,7 +356,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['app_language']], function () {
     Route::any('paypal/payment/url', 'App\Http\Controllers\Api\V2\PaypalController@getUrl')->name('api.paypal.url');
     Route::any('amarpay', [AamarpayController::class, 'pay'])->name('api.amarpay.url');
     Route::any('khalti/payment/pay', 'App\Http\Controllers\Api\V2\KhaltiController@pay')->name('api.khalti.url');
-    Route::any('razorpay/pay-with-razorpay', 'App\Http\Controllers\Api\V2\RazorpayController@payWithRazorpay')->name('api.razorpay.payment');
+    Route::any('razorpay/pay-with-razorpay', 'App\Http\Controllers\Api\V2\RazorpayController@payWithRazorpay')->name('api.razorpay.payments');
     Route::any('razorpay/payment', 'App\Http\Controllers\Api\V2\RazorpayController@payment')->name('api.razorpay.payment');
     Route::any('paystack/init', 'App\Http\Controllers\Api\V2\PaystackController@init')->name('api.paystack.init');
     Route::any('iyzico/init', 'App\Http\Controllers\Api\V2\IyzicoController@init')->name('api.iyzico.init');
@@ -463,7 +464,9 @@ Route::group(['prefix' => 'v2/expert'], function () {
 	Route::post('login/check-otp', [ExpertAuthController::class, 'checkOtp']);
 	Route::post('update/lon-lat', [ExpertAuthController::class, 'updateLonLat']);
     Route::post('logout', [ExpertAuthController::class, 'logout']);
-    Route::post('profile', [ExpertAuthController::class, 'profile'])->middleware('auth:sanctum');
+    Route::get('show/{id}', [ExpertAuthController::class, 'show']);
+    Route::get('profile', [ExpertAuthController::class, 'profile'])->middleware('auth:sanctum');
+    Route::get('notifications', [ExpertAuthController::class, 'notifications']);
     Route::post('forgot-password', [ExpertAuthController::class, 'forgotPassword']);
     Route::post('verify-otp', [ExpertAuthController::class, 'verifyOtp']);
     Route::post('reset-password', [ExpertAuthController::class, 'resetPassword']);
@@ -472,12 +475,17 @@ Route::group(['prefix' => 'v2/expert'], function () {
     Route::post('expert/filter', [ExpertController::class, 'filter']);
     Route::apiResource('expert', ExpertController::class);
     Route::apiResource('expert-review', ExpertReviewController::class)->middleware('auth:sanctum');
-	Route::post('booking-expert/slots', [BookingExpertController::class, 'booking']);
-    Route::get('booking-expert/expert', [BookingExpertController::class, 'expert_index']);
+	Route::post('booking-expert/slots', [BookingExpertController::class, 'booking'])->middleware('auth:sanctum');
+    Route::get('booking-expert/expert', [BookingExpertController::class, 'expert_index'])->middleware('auth:sanctum');
+    Route::post('booking-expert/change-status/{id}', [BookingExpertController::class, 'changeStatus']);
     Route::apiResource('booking-expert', BookingExpertController::class);
 });
-Route::get('v2/community/get', [ExpertCommunity::class, 'get']);
-Route::post('v2/slots', [SlotExpertController::class, 'index']);
+// User
+Route::get('v2/community/get', [ExpertCommunity::class, 'get'])->middleware('auth:sanctum');
+Route::post('v2/slots', [SlotExpertController::class, 'index'])->middleware('auth:sanctum');
+Route::post('v2/experts-city', [ExpertAuthController::class, 'getWithCity'])->middleware('auth:sanctum');
+Route::post('v2/experts-info', [ExpertAuthController::class, 'info'])->middleware('auth:sanctum');
+Route::post('v2/experts-wallet', [WalletController::class, 'index'])->middleware('auth:sanctum');
 
 Route::fallback(function () {
     return response()->json([

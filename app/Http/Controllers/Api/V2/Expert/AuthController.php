@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers\Api\V2\Expert;
 
+use Notification;
 use App\Models\Expert;
+use App\Models\Address;
+use App\Models\Community;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CommunityResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\ExpertResource;
-use App\Models\Community;
+use App\Http\Resources\CommunityResource;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\NotificationExpertResource;
 
 class AuthController extends Controller
 {
     public function constract()
     {
-        $this->middleware('auth:expert', ['only' => 'logout']);
+        $this->middleware('auth:expert', ['only' => 'logout', 'getWithCity','info', 'notifications']);
     }
     public function login(Request $request)
     {
@@ -246,6 +249,110 @@ class AuthController extends Controller
             'result' => true,
             'message' => 'Experet Profile',
             'data' => $data
+        ], 200);
+    }
+
+    public function getWithCity(Request $request){
+
+        $validator = Validator::make($request->all(), [
+            'adderss_id' => 'required|exists:addresses,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'result' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()->all()
+                ],
+                422
+            );
+        }
+        $address = Address::find($request->adderss_id);
+        $city = $address->city_id;
+        $experts = Expert::where('city_id', $city)->with('communities')->get();
+
+        if (!$experts) {
+            return response()->json([
+                'result' => false,
+                'message' => 'No Experts',
+                'data' => []
+            ], 404);
+        }
+        $data['experts'] = ExpertResource::collection($experts);
+        return response()->json([
+            'result' => true,
+            'message' => 'Experts',
+            'data' => $data
+        ], 200);
+    }
+
+    // profile
+    public function info(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'expert_id' => 'required|exists:experts,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'result' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()->all()
+                ],
+                422
+            );
+        }
+
+        $expert = Expert::find($request->expert_id);
+
+        $data['expert'] = ExpertResource::make($expert);
+
+        $posts = Community::where('expert_id', $expert->id)->get();
+        $data['posts'] = CommunityResource::collection($posts);
+        return response()->json([
+            'result' => true,
+            'message' => 'Experet Info',
+            'data' => $data
+        ], 200);
+    }
+
+    // Notification
+    public function notifications()
+    {
+        $expert = auth()->guard('expert')->user();
+        $notifications = NotificationExpertResource::collection($expert->notifications);
+
+        foreach ($expert->notifications as $notification) {
+            $notification->is_read = 1;
+            $notification->save();
+        }
+
+        return response()->json([
+            'result' => true,
+            'message' => 'Notifications',
+            'data' => $notifications
+        ], 200);
+
+
+    }
+
+    // show
+    public function show($id)
+    {
+        $expert = Expert::find($id);
+        if (!$expert) {
+            return response()->json([
+                'result' => false,
+                'message' => 'Expert not found',
+                'data' => []
+            ], 404);
+        }
+        return response()->json([
+            'result' => true,
+            'message' => 'Expert',
+            'data' => ExpertResource::make($expert)
         ], 200);
     }
 }

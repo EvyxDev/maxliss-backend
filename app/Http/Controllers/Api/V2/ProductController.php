@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use Str;
 use Cache;
 use Exception;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\Brand;
 use App\Models\Color;
+
 use App\Models\Product;
 
 use App\Models\Category;
-
 use App\Models\Question;
 use App\Models\Attribute;
 use App\Models\FlashDeal;
@@ -19,9 +20,12 @@ use App\Models\UserAnswers;
 use Illuminate\Http\Request;
 use App\Utility\SearchUtility;
 use App\Utility\CategoryUtility;
+use function PHPSTORM_META\type;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\V2\FlashDealCollection;
 use App\Http\Resources\V2\ProductMiniCollection;
 use App\Http\Resources\V2\Seller\BrandCollection;
+
 use App\Http\Resources\V2\ProductDetailCollection;
 use App\Http\Resources\V2\LastViewedProductCollection;
 
@@ -383,16 +387,28 @@ class ProductController extends Controller
                     }
                 });
             })->get();
+            $validator = Validator::make($request->all(), [
+                    'type' => 'required|in:buy_product,salon,expert',
+                ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'result' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()->all(),
+                ], 422);
+            }
+            $unique_id = Str::random(10);
             foreach ($answers as $answer) {
                 UserAnswers::create([
                     'user_id' => auth()->user()->id,
                     'answer_id' => $answer['answer_id'],
+                    'unique_id' => $unique_id,
+                    'type' => $request->type,
                 ]);
             }
-
             return  new ProductMiniCollection($products);
         } catch (Exception $e) {
-            dd($e);
         }
     }
     public function AllQuestion()
