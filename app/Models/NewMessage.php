@@ -12,13 +12,19 @@ class NewMessage extends Model
         'sender_id',
         'receiver_id',
         'message',
+        'chat_type',
+        'chat_id',
     ];
     public function sender()
     {
-        return $this->morphTo();
+        return $this->belongsTo(User::class, 'sender_id');
+    }
+    public function sender_expert()
+    {
+        return $this->belongsTo(Expert::class, 'sender_id');
     }
     public function receiver()
     {
-        return $this->morphTo();
+        return $this->belongsTo(User::class, 'receiver_id');
     }
 }

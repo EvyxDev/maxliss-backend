@@ -52,14 +52,33 @@ class Socket implements MessageComponentInterface
             if ($queryArray['user_type'] == "user") {
                 $sender_id = $user->id;
                 $receiver_id = User::where('user_type', 'admin')->first()->id;
-            } else {
-                $sender_id = User::where('user_type', 'admin')->first()->id;
-                $receiver_id = $user->id;
+                $chat_type = "user";
+                $chat_id = $user->id;
+            }elseif($queryArray['user_type'] == "expert"){
+                $sender = Expert::where('wss_token', $wss_token)->first();
+                $sender_id = $sender->id;
+                $receiver_id = User::find($sender->user_id)->id;
+                $chat_type = "expert";
+                $chat_id = $sender_id;
+            }else {
+                // $sender_id = User::where('user_type', operator: 'admin')->first()->id;
+                $receiver_id = $queryArray['receiver_id'];
+                $chat_id = $receiver_id;
+                $sender = User::where('wss_token', $wss_token)->first()->id;
+                if($sender->user_type == "staff"){
+                    $chat_type = "expert";
+                    $sender_id = $sender->id;
+                }else{
+                    $chat_type = "user";
+                    $sender_id = $sender->id;
+                }
             }
             $message = new NewMessage();
-            $message->sender_id = $user->id;
-            $message->receiver_id = User::where('user_type', 'admin')->first()->id;
+            $message->sender_id = $sender_id;
+            $message->receiver_id = $receiver_id;
             $message->message = $data['msg'];
+            $message->chat_type = $chat_type;
+            $message->chat_id = $chat_id;
             $message->save();
             $replyMessage = new NewMessage();
             $replyMessage->sender_id = User::where('user_type', 'admin')->first()->id;
@@ -70,7 +89,6 @@ class Socket implements MessageComponentInterface
                 if ($client !== $from) {
                     $client->send($msg);
                 }
-
 
             }
         } catch (\Exception $e) {

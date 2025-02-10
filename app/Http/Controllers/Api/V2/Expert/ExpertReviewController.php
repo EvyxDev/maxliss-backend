@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ExpertReviewResource;
+use App\Models\BusinessSetting;
+use App\Models\Point;
+use App\Models\User;
+use Bus;
 
 class ExpertReviewController extends Controller
 {
@@ -48,6 +52,8 @@ class ExpertReviewController extends Controller
         $rateing += $request->overall_appearance;
         $rateing /= 6;
 
+
+
         $rateing = round($rateing, 1);
 
         $review = ExpertReview::create([
@@ -63,7 +69,14 @@ class ExpertReviewController extends Controller
             'overall_appearance' => $request->overall_appearance,
             'image' => $request->hasFile('image') ? uploadImage($request, 'image', 'expert/review') : null,
         ]);
-
+        $point =BusinessSetting::where('type', 'add_review')->first()->value;
+        Point::create([
+            'user_id' => auth()->guard('sanctum')->user()->id,
+            'user_type' => 'user',
+            'num_of_points' => $point,
+            'action_type' => 'add_review',
+        ]);
+        User::find(auth()->guard('sanctum')->user()->id)->increment('points', $point);
         return response()->json([
             'message' => 'Expert review stored successfully',
             'data' => ExpertReviewResource::make($review)
@@ -74,7 +87,7 @@ class ExpertReviewController extends Controller
     public function show($id)
     {
         $review = ExpertReview::where('expert_id', $id)->get();
-        
+
         return response()->json([
             'message' => 'Expert review fetched successfully',
             'data' => ExpertReviewResource::collection($review)

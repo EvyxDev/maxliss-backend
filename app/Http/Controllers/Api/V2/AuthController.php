@@ -420,6 +420,7 @@ class AuthController extends Controller
                 'avatar' => $user->avatar,
                 'avatar_original' => uploaded_asset($user->avatar_original),
                 'phone' => $user->phone,
+                'points' => $user->points,
                 'wss_token' => $user->wss_token,
                 'email_verified' => $user->email_verified_at != null
             ]

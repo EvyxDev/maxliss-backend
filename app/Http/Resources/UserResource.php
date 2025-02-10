@@ -21,9 +21,11 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'user_type' => $this->user_type,
             'city' => $this->city,
+            'avatar' => $this->avatar ? env('APP_URL') . '/public/' . $this->avatar : null,
             'postal_code' => $this->postal_code,
-            'created_at' => $this->created_at->format('Y-m-d'),
-            'updated_at' => $this->updated_at->format('Y-m-d'),
+            'points' => $this->points,
+            'created_at' => $this->created_at->format('Y-m-d') ?? null,
+            'updated_at' => $this->updated_at->format('Y-m-d') ?? null,
         ];
     }
 }

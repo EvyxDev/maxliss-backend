@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\V2\Expert\SlotExpertController;
 use App\Http\Controllers\Api\V2\Expert\ExpertReviewController;
 use App\Http\Controllers\Api\V2\Expert\BookingExpertController;
 use App\Http\Controllers\Api\V2\Expert\AuthController as ExpertAuthController;
-
+use App\Http\Controllers\Api\V2\Expert\MessageController;
 
 Route::get('optimize-clear',function(){
 	Artisan::call('optimize:clear');
@@ -487,6 +487,9 @@ Route::post('v2/slots', [SlotExpertController::class, 'index'])->middleware('aut
 Route::post('v2/experts-city', [ExpertAuthController::class, 'getWithCity'])->middleware('auth:sanctum');
 Route::post('v2/experts-info', [ExpertAuthController::class, 'info'])->middleware('auth:sanctum');
 Route::post('v2/experts-wallet', [WalletController::class, 'index'])->middleware('auth:sanctum');
+Route::get('v2/messages-expert', [MessageController::class, 'index'])->middleware('auth:sanctum');
+Route::get('v2/messages-user', [MessageController::class, 'indexUser'])->middleware('auth:sanctum');
+Route::get('v2/messages-boot', [MessageController::class, 'indexBootUser'])->middleware('auth:sanctum');
 
 Route::fallback(function () {
     return response()->json([
